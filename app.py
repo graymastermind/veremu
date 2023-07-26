@@ -78,6 +78,10 @@ def get_notifications():
         notifications = cursor.fetchall()
         return notifications
 
+def reset_last_input():
+    global lastInput
+    lastInput = ""
+
 # Close the database connection when the app is finished
 @app.teardown_appcontext
 def close_connection(exception):
@@ -308,10 +312,15 @@ def reply_to_sms():
         lastInput = incoming_message
         # Handle "Examination Dates" option
         twilio_response.message("You chose option 7 - Examination Dates")
-    elif (lastInput == '' or lastInput == 'hi') and incoming_message == '8':
+    elif incoming_message == '8':
         lastInput = incoming_message
         # Handle "Exit" option
         twilio_response.message("Goodbye!")
+    elif incoming_message.lower() == "reset":
+        # Handle "reset" command to reset lastInput to an empty string
+        reset_last_input()
+        twilio_response.message("Command reset successful. lastInput is now empty.")
+
     else:
         # Check if the user is in the registration process
         cursor = get_db().cursor()
