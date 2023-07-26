@@ -86,12 +86,35 @@ def reply_to_sms():
         twilio_response.message(
             "Welcome! Ruwa Vocational Training Centre:\n0. Register\n1. Ask a question\n2. View Notifications\n3. Update "
             "Profile\n4. Submit Assignment\n5. Assignment Results\n6. Financial Account\n7. Examination Dates\n8. Exit")
+
+    #     Registration
     elif lastInput == '' and incoming_message == '0':
         lastInput = incoming_message
         # Handle "Register" option
         twilio_response.message("You chose option 0 - Register")
         # Ask the user for their username
         twilio_response.message("Please enter your username:")
+    elif lastInput == '0':
+        # Save the username and phone number to the database
+        username = incoming_message
+        user_id = generate_user_id()
+        conn = get_db()
+        cursor = conn.cursor()
+        try:
+            cursor.execute("INSERT INTO users (username, phone_number, user_id) VALUES (?, ?, ?)",
+                           (username, sender_phone_number, user_id))
+            conn.commit()
+            twilio_response.message("Registration successful! Your user ID is: {}".format(user_id))
+        except sqlite3.IntegrityError:
+            twilio_response.message("Phone number already registered.")
+        finally:
+            lastInput = ''
+            twilio_response.message(
+                "Welcome! Ruwa Vocational Training Centre:\n0. Register\n1. Ask a question\n2. View Notifications\n3. Update "
+                "Profile\n4. Submit Assignment\n5. Assignment Results\n6. Financial Account\n7. Examination Dates\n8. Exit")
+    # End Registration register user
+
+
     elif lastInput == '' and incoming_message == '1':
         lastInput = incoming_message
         # Handle "Ask a question" option
