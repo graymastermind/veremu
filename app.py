@@ -352,6 +352,7 @@ def reply_to_sms():
                 cursor.execute("INSERT INTO assignment_results (subject, mark) VALUES (?, ?)", (subject, mark))
                 get_db().commit()
             twilio_response.message("Assignment result submitted successfully.")
+            lastInput = ''
         else:
             twilio_response.message("Invalid format for submitting assignment result. Please use: SUBJECT, MARK")
     # End Assignment results
