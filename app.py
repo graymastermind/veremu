@@ -69,6 +69,13 @@ def generate_user_id():
     return user_id
 
 
+def get_notifications():
+    with app.app_context():
+        cursor = get_db().cursor()
+        cursor.execute("SELECT id, content FROM notifications")
+        notifications = cursor.fetchall()
+        return notifications
+
 # Close the database connection when the app is finished
 @app.teardown_appcontext
 def close_connection(exception):
@@ -85,7 +92,6 @@ def reply_to_sms():
     sender_phone_number = request.form.get("From", "")
 
     twilio_response = MessagingResponse()
-    twilio_response.message(incoming_message)
 
     global lastInput
 
@@ -163,11 +169,29 @@ def reply_to_sms():
     # End Questions
 
 
+    # Deal With Notifications
     elif (lastInput == '' or lastInput == 'hi') and incoming_message == '2':
         lastInput = incoming_message
         # Handle "View Notifications" option
         twilio_response.message("You chose option 2 - View Notifications")
         # Implement the logic to handle viewing notifications here
+    elif (lastInput == '' or lastInput == 'hi') and incoming_message == '11':
+        lastInput = incoming_message
+        # Handle "Notifications" option
+        twilio_response.message("You chose option 11 - Create Notification")
+        # Ask the user for the notification content
+        twilio_response.message("Please enter the notification content:")
+    elif lastInput == '11':
+        # Save the notification to the database
+        with app.app_context():
+            cursor = get_db().cursor()
+            cursor.execute("INSERT INTO notifications (content) VALUES (?)", (incoming_message,))
+            get_db().commit()
+            twilio_response.message("Notification saved successfully.")
+        lastInput = ''
+    # End Dealing with Notifictions
+
+
     elif (lastInput == '' or lastInput == 'hi') and incoming_message == '3':
         lastInput = incoming_message
         # Handle "Update Profile" option
