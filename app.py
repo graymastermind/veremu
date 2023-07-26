@@ -45,6 +45,14 @@ def create_tables():
             )
         """)
 
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS questions (
+                id INTEGER PRIMARY KEY,
+                phone_number TEXT NOT NULL,
+                content TEXT NOT NULL
+            )
+            """)
+
         get_db().commit()
 
 
@@ -112,14 +120,49 @@ def reply_to_sms():
             twilio_response.message(
                 "Welcome! Ruwa Vocational Training Centre:\n0. Register\n1. Ask a question\n2. View Notifications\n3. Update "
                 "Profile\n4. Submit Assignment\n5. Assignment Results\n6. Financial Account\n7. Examination Dates\n8. Exit")
+    elif incoming_message == '9':
+        # Handle "View Users" option
+        conn = get_db()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM users")
+        users = cursor.fetchall()
+        user_list = "\n".join([f"ID: {user[0]}, Username: {user[1]}, Phone Number: {user[2]}" for user in users])
+        twilio_response.message(f"Users:\n{user_list}")
     # End Registration register user
 
 
+    # Asking Questioms
     elif (lastInput == '' or lastInput == 'hi') and incoming_message == '1':
         lastInput = incoming_message
         # Handle "Ask a question" option
         twilio_response.message("You chose option 1 - Ask a question")
         # Implement the logic to handle asking a question here
+    elif lastInput == '1':
+        # Save the question to the database
+        question_content = incoming_message
+        conn = get_db()
+        cursor = conn.cursor()
+        try:
+            cursor.execute("INSERT INTO questions (phone_number, content) VALUES (?, ?)",
+                           (sender_phone_number, question_content))
+            conn.commit()
+            twilio_response.message("Question submitted successfully!")
+        except sqlite3.Error:
+            twilio_response.message("Failed to submit the question. Please try again.")
+        finally:
+            lastInput = ''
+    elif incoming_message == '10':
+        # Handle "View All Questions" option
+        conn = get_db()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM questions")
+        questions = cursor.fetchall()
+        question_list = "\n".join(
+            [f"ID: {question[0]}, Phone Number: {question[1]}, Content: {question[2]}" for question in questions])
+        twilio_response.message(f"All Questions:\n{question_list}")
+    # End Questions
+
+
     elif (lastInput == '' or lastInput == 'hi') and incoming_message == '2':
         lastInput = incoming_message
         # Handle "View Notifications" option
