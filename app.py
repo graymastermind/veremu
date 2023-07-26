@@ -261,6 +261,7 @@ def reply_to_sms():
                 filename = f"assignment_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}.pdf"
                 file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
 
+                twilio_response.message("File found")
                 # Save the assignment details to the database
                 conn = get_db()
                 cursor = conn.cursor()
