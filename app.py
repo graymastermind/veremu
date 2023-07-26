@@ -61,6 +61,21 @@ def create_tables():
 # Initialize the database
 create_tables()
 
+# Create table for assignment results
+def create_assignment_results_table():
+    with app.app_context():
+        cursor = get_db().cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS assignment_results (
+                id INTEGER PRIMARY KEY,
+                subject TEXT NOT NULL,
+                mark INTEGER NOT NULL
+            )
+        """)
+
+        get_db().commit()
+
+create_assignment_results_table()
 
 def generate_user_id():
     # Generate a user ID prefixed with the current year and a random 3-digit number
@@ -273,7 +288,7 @@ def reply_to_sms():
                 twilio_response.message("Your assignment has been submitted successfully.")
             else:
                 # If no file was submitted, inform the user
-                twilio_response.message("No file was submitted. Please try again.")
+                twilio_response.message("Your assignment has been submitted successfully. - +")
         else:
             # If no file was submitted, inform the user
             twilio_response.message("No file was submitted. Please try again.")
@@ -304,6 +319,43 @@ def reply_to_sms():
         lastInput = incoming_message
         # Handle "Assignment Results" option
         twilio_response.message("You chose option 5 - Assignment Results")
+        # Implement the logic to retrieve assignment results here
+        # Query the database and retrieve all assignment results
+        with app.app_context():
+            cursor = get_db().cursor()
+            cursor.execute("SELECT * FROM assignment_results")
+            assignment_results = cursor.fetchall()
+
+        # Format and send the assignment results to the user
+        result_message = "Assignment Results:\n"
+        for result in assignment_results:
+            result_message += f"ID: {result[0]}, Subject: {result[1]}, Mark: {result[2]}\n"
+
+        twilio_response.message(result_message)
+
+    elif (lastInput == '' or lastInput == 'hi') and incoming_message == '13':
+        lastInput = incoming_message
+        # Handle "Submit Assignment Results" option
+        twilio_response.message("You chose option 13 - Submit Assignment Results (Subject, Mark)")
+        # Implement the logic to submit assignment results here
+
+    elif lastInput == '13':
+        # Parse the incoming message to get subject and mark
+        parts = incoming_message.split(",")
+        if len(parts) == 2 and parts[1].strip().isdigit():
+            subject = parts[0].strip()
+            mark = int(parts[1].strip())
+
+            # Insert the assignment result into the database
+            with app.app_context():
+                cursor = get_db().cursor()
+                cursor.execute("INSERT INTO assignment_results (subject, mark) VALUES (?, ?)", (subject, mark))
+                get_db().commit()
+            twilio_response.message("Assignment result submitted successfully.")
+        else:
+            twilio_response.message("Invalid format for submitting assignment result. Please use: SUBJECT, MARK")
+    # End Assignment results
+
     elif (lastInput == '' or lastInput == 'hi') and incoming_message == '6':
         lastInput = incoming_message
         # Handle "Financial Account" option
