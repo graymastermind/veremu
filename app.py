@@ -1,3 +1,5 @@
+import os
+
 from flask import Flask, request
 from twilio.twiml.messaging_response import MessagingResponse
 import sqlite3
@@ -236,6 +238,15 @@ def reply_to_sms():
 
 
     # Code to submit assignment
+    elif (lastInput == "" or lastInput == "hi") and incoming_message == "4":
+        lastInput = incoming_message
+        # Handle "Submit Assignment" option
+        twilio_response.message("You chose option 4 - Submit Assignment")
+        # Implement the logic to handle submitting an assignment here
+
+        # Ask the user to submit the assignment file
+        twilio_response.message("Please submit your assignment file:")
+
     elif lastInput == "4":
         # Save the submitted assignment file
         if request.files:
