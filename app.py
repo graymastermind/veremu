@@ -237,6 +237,7 @@ def reply_to_sms():
     # Update Profile
 
 
+
     # Code to submit assignment
     elif (lastInput == "" or lastInput == "hi") and incoming_message == "4":
         lastInput = incoming_message
