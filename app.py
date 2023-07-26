@@ -82,24 +82,24 @@ def reply_to_sms():
     global lastInput
     lastInput = incoming_message
 
-    if incoming_message.lower() == 'hi' & lastInput == '':
+    if incoming_message.lower() == 'hi' and lastInput == '':
         twilio_response.message(
             "Welcome! Ruwa Vocational Training Centre:\n0. Register\n1. Ask a question\n2. View Notifications\n3. Update "
             "Profile\n4. Submit Assignment\n5. Assignment Results\n6. Financial Account\n7. Examination Dates\n8. Exit")
-    elif lastInput == '' & incoming_message == '0':
+    elif lastInput == '' and incoming_message == '0':
         # Handle "Register" option
         twilio_response.message("You chose option 0 - Register")
         # Ask the user for their username
         twilio_response.message("Please enter your username:")
-    elif lastInput == '' & incoming_message == '1':
+    elif lastInput == '' and incoming_message == '1':
         # Handle "Ask a question" option
         twilio_response.message("You chose option 1 - Ask a question")
         # Implement the logic to handle asking a question here
-    elif lastInput == '' & incoming_message == '2':
+    elif lastInput == '' and incoming_message == '2':
         # Handle "View Notifications" option
         twilio_response.message("You chose option 2 - View Notifications")
         # Implement the logic to handle viewing notifications here
-    elif lastInput == '' & incoming_message == '3':
+    elif lastInput == '' and incoming_message == '3':
         # Handle "Update Profile" option
         twilio_response.message("You chose option 3 - Update Profile")
         # Check if the user is registered
@@ -111,20 +111,20 @@ def reply_to_sms():
             twilio_response.message("Please enter your new username:")
         else:
             twilio_response.message("You are not registered. Please register first.")
-    elif lastInput == '' & incoming_message == '4':
+    elif lastInput == '' and incoming_message == '4':
         # Handle "Submit Assignment" option
         twilio_response.message("You chose option 4 - Submit Assignment")
         # Implement the logic to handle submitting an assignment here
-    elif lastInput == '' & incoming_message == '5':
+    elif lastInput == '' and incoming_message == '5':
         # Handle "Assignment Results" option
         twilio_response.message("You chose option 5 - Assignment Results")
-    elif lastInput == '' & incoming_message == '6':
+    elif lastInput == '' and incoming_message == '6':
         # Handle "Financial Account" option
         twilio_response.message("You chose option 6 - Financial Account")
-    elif lastInput == '' & incoming_message == '7':
+    elif lastInput == '' and incoming_message == '7':
         # Handle "Examination Dates" option
         twilio_response.message("You chose option 7 - Examination Dates")
-    elif lastInput == '' & incoming_message == '8':
+    elif lastInput == '' and incoming_message == '8':
         # Handle "Exit" option
         twilio_response.message("Goodbye!")
     else:
