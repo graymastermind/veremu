@@ -175,6 +175,22 @@ def reply_to_sms():
         # Handle "View Notifications" option
         twilio_response.message("You chose option 2 - View Notifications")
         # Implement the logic to handle viewing notifications here
+        # Query the notifications from the database
+        conn = get_db()
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, content FROM notifications")
+        notifications = cursor.fetchall()
+
+        # Check if there are any notifications
+        if notifications:
+            message = "Notifications:\n"
+            for notification in notifications:
+                message += f"{notification[0]}. {notification[1]}\n"
+        else:
+            message = "No notifications found."
+
+        # Send the notifications to the user
+        twilio_response.message(message)
     elif (lastInput == '' or lastInput == 'hi') and incoming_message == '11':
         lastInput = incoming_message
         # Handle "Notifications" option
@@ -192,24 +208,81 @@ def reply_to_sms():
     # End Dealing with Notifictions
 
 
+    # Update Profile
     elif (lastInput == '' or lastInput == 'hi') and incoming_message == '3':
         lastInput = incoming_message
         # Handle "Update Profile" option
         twilio_response.message("You chose option 3 - Update Profile")
-        # Check if the user is registered
-        cursor = get_db().cursor()
-        cursor.execute("SELECT * FROM users WHERE phone_number=?", (request.form['From'],))
-        existing_user = cursor.fetchone()
-        if existing_user:
-            # If the user is registered, prompt them to enter a new username
-            twilio_response.message("Please enter your new username:")
+        # Ask the user for their new username
+        twilio_response.message("Please enter your new username:")
+    elif lastInput == '3':
+        # Update the user's profile in the database
+        with app.app_context():
+            cursor = get_db().cursor()
+            # Get the user's current phone number to identify the user
+            cursor.execute("SELECT * FROM users WHERE phone_number=?", (sender_phone_number,))
+            user = cursor.fetchone()
+
+            if user:
+                new_username = incoming_message
+                # Update the user's username in the database
+                cursor.execute("UPDATE users SET username=? WHERE phone_number=?", (new_username, sender_phone_number))
+                get_db().commit()
+                twilio_response.message("Your profile has been updated successfully.")
+            else:
+                twilio_response.message("User not found. Please register first.")
+        lastInput = ''
+    # Update Profile
+
+
+    # Code to submit assignment
+    elif lastInput == "4":
+        # Save the submitted assignment file
+        if request.files:
+            file = request.files["MediaUrl0"]
+            if file:
+                # Generate a unique filename for the assignment
+                filename = f"assignment_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}.pdf"
+                file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
+
+                # Save the assignment details to the database
+                conn = get_db()
+                cursor = conn.cursor()
+                cursor.execute("INSERT INTO assignments (subject, file_storage) VALUES (?, ?)",
+                               ("Mathematics", filename))  # You can change the subject accordingly
+                conn.commit()
+
+                # Send confirmation message to the user
+                twilio_response.message("Your assignment has been submitted successfully.")
+            else:
+                # If no file was submitted, inform the user
+                twilio_response.message("No file was submitted. Please try again.")
         else:
-            twilio_response.message("You are not registered. Please register first.")
-    elif (lastInput == '' or lastInput == 'hi') and incoming_message == '4':
-        lastInput = incoming_message
-        # Handle "Submit Assignment" option
-        twilio_response.message("You chose option 4 - Submit Assignment")
-        # Implement the logic to handle submitting an assignment here
+            # If no file was submitted, inform the user
+            twilio_response.message("No file was submitted. Please try again.")
+
+        # Reset the lastInput to empty to allow for other operations
+        lastInput = ""
+
+    elif incoming_message == "12":
+        # View all assignment files
+        conn = get_db()
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, file_storage FROM assignments")
+        assignments = cursor.fetchall()
+
+        if assignments:
+            message = "Available assignments:\n"
+            for assignment in assignments:
+                message += f"{assignment[0]}. {assignment[1]}\n"
+        else:
+            message = "No assignments found."
+
+        twilio_response.message(message)
+    # End Submit assignment
+
+
+    # Assignment Results
     elif (lastInput == '' or lastInput == 'hi') and incoming_message == '5':
         lastInput = incoming_message
         # Handle "Assignment Results" option
