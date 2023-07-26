@@ -77,6 +77,23 @@ def create_assignment_results_table():
 
 create_assignment_results_table()
 
+
+# Create table for examination dates
+def create_exam_dates_table():
+    with app.app_context():
+        cursor = get_db().cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS exam_dates (
+                id INTEGER PRIMARY KEY,
+                subject_name TEXT NOT NULL,
+                exam_date DATE NOT NULL
+            )
+        """)
+
+        get_db().commit()
+
+
+create_exam_dates_table()
 def generate_user_id():
     # Generate a user ID prefixed with the current year and a random 3-digit number
     current_year = str(datetime.datetime.now().year)
@@ -361,11 +378,54 @@ def reply_to_sms():
         lastInput = incoming_message
         # Handle "Financial Account" option
         twilio_response.message("You chose option 6 - Financial Account")
-        lastInput = incoming_message
+
+
+    # Exam Date
     elif (lastInput == '' or lastInput == 'hi') and incoming_message == '7':
         lastInput = incoming_message
-        # Handle "Examination Dates" option
-        twilio_response.message("You chose option 7 - Examination Dates")
+        # Handle "View Examination Dates" option
+        twilio_response.message("You chose option 7 - View Examination Dates")
+        # Implement the logic to retrieve examination dates here
+        # Query the database and retrieve all examination dates
+        with app.app_context():
+            cursor = get_db().cursor()
+            cursor.execute("SELECT * FROM exam_dates")
+            exam_dates = cursor.fetchall()
+
+        # Format and send the examination dates to the user
+        result_message = "Examination Dates:\n"
+        for date in exam_dates:
+            result_message += f"ID: {date[0]}, Subject: {date[1]}, Date: {date[2]}\n"
+
+        twilio_response.message(result_message)
+
+    elif (lastInput == '' or lastInput == 'hi') and incoming_message == '14':
+        lastInput = incoming_message
+        # Handle "Create Examination Date" option
+        twilio_response.message("You chose option 14 - Create Examination Date")
+        # Implement the logic to create an examination date here
+
+    elif lastInput == '14':
+        # Parse the incoming message to get subject name and date
+        parts = incoming_message.split(",")
+        if len(parts) == 2:
+            subject_name = parts[0].strip()
+            exam_date = parts[1].strip()
+
+            # Insert the examination date into the database
+            with app.app_context():
+                cursor = get_db().cursor()
+                cursor.execute("INSERT INTO exam_dates (subject_name, exam_date) VALUES (?, ?)",
+                               (subject_name, exam_date))
+                get_db().commit()
+            twilio_response.message("Examination date created successfully.")
+            lastInput = ''
+        else:
+            twilio_response.message("Invalid format for creating examination date. Please use: SUBJECT NAME, DATE")
+
+    # End Exam Date
+
+
     elif incoming_message == '8':
         lastInput = incoming_message
         # Handle "Exit" option
