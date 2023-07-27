@@ -479,7 +479,8 @@ def reply_to_sms():
             answer = response.choices[0].text.strip()
             twilio_response.message(f"Here is your answer:\n{answer}")
         except Exception as e:
-            twilio_response.message("An error occurred while processing your question. Please try again later.")
+            # twilio_response.message("An error occurred while processing your question. Please try again later.")
+            twilio_response.message(e)
     # End Research
 
     elif incoming_message == '8':
