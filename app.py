@@ -11,7 +11,7 @@ from twilio.twiml.messaging_response import MessagingResponse
 app = Flask(__name__)
 
 
-openai.api_key = "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"
+openai.api_key = "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"
 
 # Connect to the SQLite database
 def get_db():
