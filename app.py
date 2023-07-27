@@ -94,6 +94,25 @@ def create_exam_dates_table():
 
 
 create_exam_dates_table()
+
+
+# Create table for account information
+def create_account_information_table():
+    with app.app_context():
+        cursor = get_db().cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS account_information (
+                id INTEGER PRIMARY KEY,
+                phone_number TEXT NOT NULL UNIQUE,
+                balance REAL NOT NULL
+            )
+        """)
+
+        get_db().commit()
+
+# Initialize the database and create the account information table
+create_account_information_table()
+
 def generate_user_id():
     # Generate a user ID prefixed with the current year and a random 3-digit number
     current_year = str(datetime.datetime.now().year)
@@ -134,14 +153,17 @@ def reply_to_sms():
     global lastInput
 
     if incoming_message.lower() == 'hi' and (lastInput == '' or lastInput == 'hi'):
-        lastInput = incoming_message
+        lastInput = incoming_message.lower()
         twilio_response.message(
             "Welcome! Ruwa Vocational Training Centre:\n0. Register\n1. Ask a question\n2. View Notifications\n3. Update "
-            "Profile\n4. Submit Assignment\n5. Assignment Results\n6. Financial Account\n7. Examination Dates\n8. Exit")
-
+            "Profile\n4. Submit Assignment\n5. Assignment Results\n6. Financial Account\n7. Examination Dates\n(research). Use command research to ask any question\n8. Exit")
+    elif incoming_message.lower() == "reset":
+        # Handle "reset" command to reset lastInput to an empty string
+        reset_last_input()
+        twilio_response.message("Command reset successful. lastInput is now empty.")
     #     Registration
     elif (lastInput == '' or lastInput == 'hi') and incoming_message == '0':
-        lastInput = incoming_message
+        lastInput = incoming_message.lower()
         # Handle "Register" option
         twilio_response.message("You chose option 0 - Register")
         # Ask the user for their username
@@ -172,12 +194,13 @@ def reply_to_sms():
         users = cursor.fetchall()
         user_list = "\n".join([f"ID: {user[0]}, Username: {user[1]}, Phone Number: {user[2]}" for user in users])
         twilio_response.message(f"Users:\n{user_list}")
+        reset_last_input()
     # End Registration register user
 
 
     # Asking Questioms
     elif (lastInput == '' or lastInput == 'hi') and incoming_message == '1':
-        lastInput = incoming_message
+        lastInput = incoming_message.lower()
         # Handle "Ask a question" option
         twilio_response.message("You chose option 1 - Ask a question")
         # Implement the logic to handle asking a question here
@@ -204,12 +227,13 @@ def reply_to_sms():
         question_list = "\n".join(
             [f"ID: {question[0]}, Phone Number: {question[1]}, Content: {question[2]}" for question in questions])
         twilio_response.message(f"All Questions:\n{question_list}")
+        reset_last_input()
     # End Questions
 
 
     # Deal With Notifications
     elif (lastInput == '' or lastInput == 'hi') and incoming_message == '2':
-        lastInput = incoming_message
+        lastInput = incoming_message.lower()
         # Handle "View Notifications" option
         twilio_response.message("You chose option 2 - View Notifications")
         # Implement the logic to handle viewing notifications here
@@ -226,11 +250,12 @@ def reply_to_sms():
                 message += f"{notification[0]}. {notification[1]}\n"
         else:
             message = "No notifications found."
-
+        reset_last_input()
         # Send the notifications to the user
         twilio_response.message(message)
+
     elif (lastInput == '' or lastInput == 'hi') and incoming_message == '11':
-        lastInput = incoming_message
+        lastInput = incoming_message.lower()
         # Handle "Notifications" option
         twilio_response.message("You chose option 11 - Create Notification")
         # Ask the user for the notification content
@@ -248,7 +273,7 @@ def reply_to_sms():
 
     # Update Profile
     elif (lastInput == '' or lastInput == 'hi') and incoming_message == '3':
-        lastInput = incoming_message
+        lastInput = incoming_message.lower()
         # Handle "Update Profile" option
         twilio_response.message("You chose option 3 - Update Profile")
         # Ask the user for their new username
@@ -276,7 +301,7 @@ def reply_to_sms():
 
     # Code to submit assignment
     elif (lastInput == "" or lastInput == "hi") and incoming_message == "4":
-        lastInput = incoming_message
+        lastInput = incoming_message.lower()
         # Handle "Submit Assignment" option
         twilio_response.message("You chose option 4 - Submit Assignment")
         # Implement the logic to handle submitting an assignment here
@@ -326,14 +351,14 @@ def reply_to_sms():
                 message += f"{assignment[0]}. {assignment[1]}\n"
         else:
             message = "No assignments found."
-
+        reset_last_input()
         twilio_response.message(message)
     # End Submit assignment
 
 
     # Assignment Results
     elif (lastInput == '' or lastInput == 'hi') and incoming_message == '5':
-        lastInput = incoming_message
+        lastInput = incoming_message.lower()
         # Handle "Assignment Results" option
         twilio_response.message("You chose option 5 - Assignment Results")
         # Implement the logic to retrieve assignment results here
@@ -347,11 +372,11 @@ def reply_to_sms():
         result_message = "Assignment Results:\n"
         for result in assignment_results:
             result_message += f"ID: {result[0]}, Subject: {result[1]}, Mark: {result[2]}\n"
-
+        reset_last_input()
         twilio_response.message(result_message)
 
     elif (lastInput == '' or lastInput == 'hi') and incoming_message == '13':
-        lastInput = incoming_message
+        lastInput = incoming_message.lower()
         # Handle "Submit Assignment Results" option
         twilio_response.message("You chose option 13 - Submit Assignment Results (Subject, Mark)")
         # Implement the logic to submit assignment results here
@@ -374,15 +399,20 @@ def reply_to_sms():
             twilio_response.message("Invalid format for submitting assignment result. Please use: SUBJECT, MARK")
     # End Assignment results
 
+
+    # Financial Account
     elif (lastInput == '' or lastInput == 'hi') and incoming_message == '6':
-        lastInput = incoming_message
+        lastInput = incoming_message.lower()
         # Handle "Financial Account" option
         twilio_response.message("You chose option 6 - Financial Account")
 
+    # End Financial
+
 
     # Exam Date
+
     elif (lastInput == '' or lastInput == 'hi') and incoming_message == '7':
-        lastInput = incoming_message
+        lastInput = incoming_message.lower()
         # Handle "View Examination Dates" option
         twilio_response.message("You chose option 7 - View Examination Dates")
         # Implement the logic to retrieve examination dates here
@@ -400,7 +430,7 @@ def reply_to_sms():
         twilio_response.message(result_message)
 
     elif (lastInput == '' or lastInput == 'hi') and incoming_message == '14':
-        lastInput = incoming_message
+        lastInput = incoming_message.lower()
         # Handle "Create Examination Date" option
         twilio_response.message("You chose option 14 - Create Examination Date")
         # Implement the logic to create an examination date here
@@ -427,13 +457,10 @@ def reply_to_sms():
 
 
     elif incoming_message == '8':
-        lastInput = incoming_message
+        lastInput = incoming_message.lower()
         # Handle "Exit" option
         twilio_response.message("Goodbye!")
-    elif incoming_message.lower() == "reset":
-        # Handle "reset" command to reset lastInput to an empty string
         reset_last_input()
-        twilio_response.message("Command reset successful. lastInput is now empty.")
 
     else:
         # Check if the user is in the registration process
