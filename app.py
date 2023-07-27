@@ -1,5 +1,5 @@
 import os
-
+import openai
 from flask import Flask, request
 from twilio.twiml.messaging_response import MessagingResponse
 import sqlite3
@@ -10,6 +10,8 @@ from twilio.twiml.messaging_response import MessagingResponse
 
 app = Flask(__name__)
 
+
+openai.api_key = "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"
 
 # Connect to the SQLite database
 def get_db():
@@ -455,6 +457,30 @@ def reply_to_sms():
 
     # End Exam Date
 
+    # Do Research
+    elif (lastInput == '' or lastInput == 'hi') and incoming_message.lower() == 'research':
+        lastInput = incoming_message
+        # Handle "Research" option
+        twilio_response.message("You chose option 'research'. Please enter your question:")
+
+    elif lastInput == 'research':
+        # Process the research question using the ChatGPT API
+        lastInput = ''  # Reset lastInput so that the next message is treated as a new input
+        research_question = incoming_message.strip()
+        try:
+            response = openai.Completion.create(
+                engine="text-davinci-002",
+                prompt=research_question,
+                max_tokens=150,
+                n=1,
+                stop=None,
+                temperature=0.7,
+            )
+            answer = response.choices[0].text.strip()
+            twilio_response.message(f"Here is your answer:\n{answer}")
+        except Exception as e:
+            twilio_response.message("An error occurred while processing your question. Please try again later.")
+    # End Research
 
     elif incoming_message == '8':
         lastInput = incoming_message.lower()
