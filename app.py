@@ -498,28 +498,7 @@ def reply_to_sms():
         reset_last_input()
 
     else:
-        # Check if the user is in the registration process
-        cursor = get_db().cursor()
-        cursor.execute("SELECT * FROM users WHERE phone_number=?", (request.form['From'],))
-        existing_user = cursor.fetchone()
-        if existing_user and not existing_user[1]:
-            # If the user is in the registration process and hasn't entered a username yet
-            # Store the username and user ID in the database
-            username = incoming_message
-            user_id = generate_user_id()
-            cursor.execute("UPDATE users SET username=?, user_id=? WHERE phone_number=?",
-                           (username, user_id, request.form['From']))
-            get_db().commit()
-            twilio_response.message(f"Welcome, {username}! Your user ID is {user_id}.")
-        elif existing_user and existing_user[1]:
-            # If the user is already registered and wants to update their username
-            new_username = incoming_message
-            cursor.execute("UPDATE users SET username=? WHERE phone_number=?", (new_username, request.form['From']))
-            get_db().commit()
-            twilio_response.message(f"Your username has been updated to {new_username}.")
-        else:
-            # Handle invalid input
-            twilio_response.message("Invalid choice. Please try again.")
+        pass
 
     return str(twilio_response)
 
