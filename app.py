@@ -1,17 +1,23 @@
 import os
-import openai
-from flask import Flask, request
-from twilio.twiml.messaging_response import MessagingResponse
 import sqlite3
 import random
 import datetime
 from flask import Flask, request, g
 from twilio.twiml.messaging_response import MessagingResponse
+import poe
+import logging
 
 app = Flask(__name__)
 
+# poe settings
+#send a message and immediately delete it
+token = "mXqoIb80IJEihKjz_KVSbA%3D%3D"
+poe.logger.setLevel(logging.INFO)
+client = poe.Client(token)
+global response
+response = ''
 
-openai.api_key = "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"
+# end poe
 
 # Connect to the SQLite database
 def get_db():
@@ -468,16 +474,17 @@ def reply_to_sms():
         lastInput = ''  # Reset lastInput so that the next message is treated as a new input
         research_question = incoming_message.strip()
         try:
-            response = openai.Completion.create(
-                engine="text-davinci-002",
-                prompt=research_question,
-                max_tokens=150,
-                n=1,
-                stop=None,
-                temperature=0.7,
-            )
-            answer = response.choices[0].text.strip()
-            twilio_response.message(f"Here is your answer:\n{answer}")
+            message = "What is science?"
+            for chunk in client.send_message("capybara", message, with_chat_break=True):
+                # print(chunk["text_new"], end="", flush=True)
+                response = response + chunk["text_new"]
+
+            print("response :", response)
+            # delete the 3 latest messages, including the chat break
+            client.purge_conversation("capybara", count=3)
+
+            twilio_response.message(f"Here is your answer:\n{response}")
+            reset_last_input()
         except Exception as e:
             # twilio_response.message("An error occurred while processing your question. Please try again later.")
             twilio_response.message(e)
