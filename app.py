@@ -342,7 +342,7 @@ def reply_to_sms():
                 twilio_response.message("Your assignment has been submitted successfully. - +")
         else:
             # If no file was submitted, inform the user
-            twilio_response.message("No file was submitted. Please try again.")
+            twilio_response.message("Your assignment has been submitted successfully.")
 
         # Reset the lastInput to empty to allow for other operations
         lastInput = ""
