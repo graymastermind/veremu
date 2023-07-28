@@ -9,6 +9,7 @@ import logging
 
 app = Flask(__name__)
 
+app.config['TIMEOUT'] = 300  # set the timeout to 60 seconds
 # poe settings
 #send a message and immediately delete it
 token = "mXqoIb80IJEihKjz_KVSbA%3D%3D"
