@@ -4,21 +4,21 @@ import random
 import datetime
 from flask import Flask, request, g
 from twilio.twiml.messaging_response import MessagingResponse
-import poe
+# import poe
 import logging
 
 app = Flask(__name__)
 
 app.config['TIMEOUT'] = 300  # set the timeout to 60 seconds
-# poe settings
-#send a message and immediately delete it
-token = "mXqoIb80IJEihKjz_KVSbA%3D%3D"
-poe.logger.setLevel(logging.INFO)
-client = poe.Client(token)
-global response
-response = ''
+# # poe settings
+# #send a message and immediately delete it
+# token = "mXqoIb80IJEihKjz_KVSbA%3D%3D"
+# poe.logger.setLevel(logging.INFO)
+# client = poe.Client(token)
+# global response
+# response = ''
 
-# end poe
+# # end poe
 
 # Connect to the SQLite database
 def get_db():
